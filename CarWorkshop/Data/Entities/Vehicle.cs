@@ -8,17 +8,17 @@ namespace CarWorkshop.Data.Entities
         public int Id { get; set; }
 
         [Required]
-        [MaxLength(50, ErrorMessage = "The field {0} can have a maximum of {1} characters.")]
+        [MaxLength(50, ErrorMessage = "The field {0} can contain {1} characters length.")]
         [Display(Name = "Brand")]
         public string Brand { get; set; }
 
         [Required]
-        [MaxLength(50, ErrorMessage = "The field {0} can have a maximum of {1} characters.")]
+        [MaxLength(50, ErrorMessage = "The field {0} can contain {1} characters length.")]
         [Display(Name = "Model")]
         public string Model { get; set; }
 
         [Required]
-        [MaxLength(20, ErrorMessage = "The field {0} can have a maximum of {1} characters.")]
+        [MaxLength(20, ErrorMessage = "The field {0} can contain {1} characters length.")]
         [Display(Name = "License Plate")]
         public string LicensePlate { get; set; }
 
