@@ -26,6 +26,8 @@ namespace CarWorkshop
             });
 
             services.AddTransient<SeedDb>();
+            services.AddScoped<IVehicleRepository, VehicleRepository>();
+
 
             services.AddControllersWithViews();
         }

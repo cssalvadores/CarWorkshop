@@ -10,17 +10,17 @@ namespace CarWorkshop.Controllers
 {
     public class VehiclesController : Controller
     {
-        private readonly DataContext _context;
+        private readonly IVehicleRepository _vehicleRepository;
 
-        public VehiclesController(DataContext context)
-        {
-            _context = context;
+        public VehiclesController(IVehicleRepository vehicleRepository)
+        {            
+            _vehicleRepository = vehicleRepository;
         }
 
         // GET: Vehicles
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            return View(await _context.Vehicles.ToListAsync());
+            return View(_vehicleRepository.GetAll());
         }
 
         // GET: Vehicles/Details/5
@@ -31,8 +31,7 @@ namespace CarWorkshop.Controllers
                 return NotFound();
             }
 
-            var vehicle = await _context.Vehicles
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var vehicle = await _vehicleRepository.GetByIdAsync(id.Value);                
             if (vehicle == null)
             {
                 return NotFound();
@@ -56,8 +55,7 @@ namespace CarWorkshop.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(vehicle);
-                await _context.SaveChangesAsync();
+                await _vehicleRepository.CreateAsync(vehicle);
                 return RedirectToAction(nameof(Index));
             }
             return View(vehicle);
@@ -71,7 +69,8 @@ namespace CarWorkshop.Controllers
                 return NotFound();
             }
 
-            var vehicle = await _context.Vehicles.FindAsync(id);
+            var vehicle = await _vehicleRepository.GetByIdAsync(id.Value);
+
             if (vehicle == null)
             {
                 return NotFound();
@@ -95,12 +94,11 @@ namespace CarWorkshop.Controllers
             {
                 try
                 {
-                    _context.Update(vehicle);
-                    await _context.SaveChangesAsync();
+                    await _vehicleRepository.UpdateAsync(vehicle);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!VehicleExists(vehicle.Id))
+                    if (! await _vehicleRepository.ExistAsync(vehicle.Id))
                     {
                         return NotFound();
                     }
@@ -122,8 +120,8 @@ namespace CarWorkshop.Controllers
                 return NotFound();
             }
 
-            var vehicle = await _context.Vehicles
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var vehicle = await _vehicleRepository.GetByIdAsync(id.Value);
+
             if (vehicle == null)
             {
                 return NotFound();
@@ -137,15 +135,9 @@ namespace CarWorkshop.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var vehicle = await _context.Vehicles.FindAsync(id);
-            _context.Vehicles.Remove(vehicle);
-            await _context.SaveChangesAsync();
+            var vehicle = await _vehicleRepository.GetByIdAsync(id);
+            await _vehicleRepository.DeleteAsync(vehicle);
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool VehicleExists(int id)
-        {
-            return _context.Vehicles.Any(e => e.Id == id);
         }
     }
 }

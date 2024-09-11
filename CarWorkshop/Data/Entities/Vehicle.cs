@@ -3,7 +3,7 @@ using System;
 
 namespace CarWorkshop.Data.Entities
 {
-    public class Vehicle
+    public class Vehicle : IEntity 
     {
         public int Id { get; set; }
 
