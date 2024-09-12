@@ -1,34 +1,28 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using CarWorkshop.Data;
+﻿using CarWorkshop.Data;
 using CarWorkshop.Data.Entities;
-using CarWorkshop.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace CarWorkshop.Controllers
 {
-    public class VehiclesController : Controller
+    public class ClientsController : Controller
     {
-        private readonly IVehicleRepository _vehicleRepository;
-        private readonly IUserHelper _userHelper;
+        private readonly DataContext _context;
 
-        public VehiclesController(
-            IVehicleRepository vehicleRepository,
-            IUserHelper userHelper)
-        {            
-            _vehicleRepository = vehicleRepository;
-            _userHelper = userHelper;
-        }
-
-        // GET: Vehicles
-        public IActionResult Index()
+        public ClientsController(DataContext context)
         {
-            return View(_vehicleRepository.GetAll()); //.OrderBy(v => v.Brand)
+            _context = context;
         }
 
-        // GET: Vehicles/Details/5
+        // GET: Clients
+        public async Task<IActionResult> Index()
+        {
+            return View(await _context.Clients.ToListAsync());
+        }
+
+        // GET: Clients/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -36,39 +30,39 @@ namespace CarWorkshop.Controllers
                 return NotFound();
             }
 
-            var vehicle = await _vehicleRepository.GetByIdAsync(id.Value);                
-            if (vehicle == null)
+            var client = await _context.Clients
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (client == null)
             {
                 return NotFound();
             }
 
-            return View(vehicle);
+            return View(client);
         }
 
-        // GET: Vehicles/Create
+        // GET: Clients/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Vehicles/Create
+        // POST: Clients/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Vehicle vehicle)
+        public async Task<IActionResult> Create([Bind("Id,Name,Telephone,Email")] Client client)
         {
             if (ModelState.IsValid)
             {
-                //TODO: Modificar para o user que tiver logado
-                vehicle.User = await _userHelper.GetUserByEmailAsync("cssalvador29@gmail.com");
-                await _vehicleRepository.CreateAsync(vehicle);
+                _context.Add(client);
+                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(vehicle);
+            return View(client);
         }
 
-        // GET: Vehicles/Edit/5
+        // GET: Clients/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -76,23 +70,22 @@ namespace CarWorkshop.Controllers
                 return NotFound();
             }
 
-            var vehicle = await _vehicleRepository.GetByIdAsync(id.Value);
-
-            if (vehicle == null)
+            var client = await _context.Clients.FindAsync(id);
+            if (client == null)
             {
                 return NotFound();
             }
-            return View(vehicle);
+            return View(client);
         }
 
-        // POST: Vehicles/Edit/5
+        // POST: Clients/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Vehicle vehicle)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Telephone,Email")] Client client)
         {
-            if (id != vehicle.Id)
+            if (id != client.Id)
             {
                 return NotFound();
             }
@@ -101,13 +94,12 @@ namespace CarWorkshop.Controllers
             {
                 try
                 {
-                    //TODO: Modificar para o user que tiver logado
-                    vehicle.User = await _userHelper.GetUserByEmailAsync("cssalvador29@gmail.com");
-                    await _vehicleRepository.UpdateAsync(vehicle);
+                    _context.Update(client);
+                    await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (! await _vehicleRepository.ExistAsync(vehicle.Id))
+                    if (!ClientExists(client.Id))
                     {
                         return NotFound();
                     }
@@ -118,10 +110,10 @@ namespace CarWorkshop.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(vehicle);
+            return View(client);
         }
 
-        // GET: Vehicles/Delete/5
+        // GET: Clients/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -129,24 +121,30 @@ namespace CarWorkshop.Controllers
                 return NotFound();
             }
 
-            var vehicle = await _vehicleRepository.GetByIdAsync(id.Value);
-
-            if (vehicle == null)
+            var client = await _context.Clients
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (client == null)
             {
                 return NotFound();
             }
 
-            return View(vehicle);
+            return View(client);
         }
 
-        // POST: Vehicles/Delete/5
+        // POST: Clients/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var vehicle = await _vehicleRepository.GetByIdAsync(id);
-            await _vehicleRepository.DeleteAsync(vehicle);
+            var client = await _context.Clients.FindAsync(id);
+            _context.Clients.Remove(client);
+            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
+        }
+
+        private bool ClientExists(int id)
+        {
+            return _context.Clients.Any(e => e.Id == id);
         }
     }
 }

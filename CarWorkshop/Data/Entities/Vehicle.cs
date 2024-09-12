@@ -36,5 +36,7 @@ namespace CarWorkshop.Data.Entities
 
         [Display(Name = "Under Repair")]
         public bool UnderRepair { get; set; }
+
+        public User User { get; set; }
     }
 }
